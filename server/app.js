@@ -27,6 +27,16 @@ app.get('/create',
   res.render('index');
 });
 
+app.get('/signup', 
+(req, res) => {
+  res.render('signup');
+});
+
+app.get('/login', 
+(req, res) => {
+  res.render('login');
+});
+
 app.get('/links', 
 (req, res, next) => {
   models.Links.getAll()
@@ -78,10 +88,23 @@ app.post('/links',
 // Write your authentication routes here
 /************************************************************/
 app.post('/signup', (req, res, next) => {
-  console.log(req.body.username);
-  var username = req.body.username;
-  var password = req.body.password;
-  return models.Users.create({username, password});
+  return models.Users.get({username: req.body.username})
+  .then((userInfo) => {
+    if (userInfo === undefined) {
+      models.Users.create({username: req.body.username, password: req.body.password});
+      next();
+    } else {
+      res.redirect('/signup');
+    }
+  });
+});
+
+app.post('/login', (req, res, next) => {
+  models.Users.get({username: req.body.username}) 
+  .then((userInfo) => models.Users.compare(req.body.password, userInfo.password, userInfo.salt));
+  // userInfo((resolve,reject));
+  // console.log(userInfo, 'userinfo');
+  //return models.Users.compare(req.body.password, passwordMatch);
   next();
 });
 
