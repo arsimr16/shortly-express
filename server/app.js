@@ -92,6 +92,7 @@ app.post('/signup', (req, res, next) => {
   .then((userInfo) => {
     if (userInfo === undefined) {
       models.Users.create({username: req.body.username, password: req.body.password});
+      res.redirect('/');
       next();
     } else {
       res.redirect('/signup');
@@ -100,12 +101,25 @@ app.post('/signup', (req, res, next) => {
 });
 
 app.post('/login', (req, res, next) => {
-  models.Users.get({username: req.body.username}) 
-  .then((userInfo) => models.Users.compare(req.body.password, userInfo.password, userInfo.salt));
-  // userInfo((resolve,reject));
-  // console.log(userInfo, 'userinfo');
-  //return models.Users.compare(req.body.password, passwordMatch);
-  next();
+  return models.Users.get({username: req.body.username}) 
+  .then((userInfo) => {
+    // if the user is not in the db, redirect to login page
+    if (userInfo === undefined) {
+      res.redirect('/login');
+      next();
+    // if the password is correct, redirect to index
+    } else if (models.Users.compare(req.body.password, userInfo.password, userInfo.salt)) {
+      res.redirect('/');
+      next();
+    // if password is incorrect, redirect to login page
+    } else {
+      res.redirect('/login');
+      next();
+    }
+  });
+  // .then((userInfo) => models.Users.compare(req.body.password, userInfo.password, userInfo.salt));
+  // res.redirect('/');
+  // next();
 });
 
 
