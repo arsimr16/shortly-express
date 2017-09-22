@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../public')));
 
-
+// app.use(Auth.createSession);
 
 app.get('/', 
 (req, res) => {
@@ -91,9 +91,8 @@ app.post('/signup', (req, res, next) => {
   return models.Users.get({username: req.body.username})
   .then((userInfo) => {
     if (userInfo === undefined) {
-      models.Users.create({username: req.body.username, password: req.body.password});
-      res.redirect('/');
-      next();
+      models.Users.create({username: req.body.username, password: req.body.password})
+      .then(() => res.redirect('/'));
     } else {
       res.redirect('/signup');
     }
@@ -103,25 +102,18 @@ app.post('/signup', (req, res, next) => {
 app.post('/login', (req, res, next) => {
   return models.Users.get({username: req.body.username}) 
   .then((userInfo) => {
-    // if the user is not in the db, redirect to login page
     if (userInfo === undefined) {
       res.redirect('/login');
-      next();
-    // if the password is correct, redirect to index
+      // next();
     } else if (models.Users.compare(req.body.password, userInfo.password, userInfo.salt)) {
       res.redirect('/');
-      next();
-    // if password is incorrect, redirect to login page
+      // next();
     } else {
       res.redirect('/login');
-      next();
+      // next();
     }
   });
-  // .then((userInfo) => models.Users.compare(req.body.password, userInfo.password, userInfo.salt));
-  // res.redirect('/');
-  // next();
 });
-
 
 /************************************************************/
 // Handle the code parameter route last - if all other routes fail
